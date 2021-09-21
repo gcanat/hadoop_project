@@ -86,12 +86,14 @@ tp-hadoop-36
 cd ~/
 
 cat ~/hadoop/etc/hadoop/workers | while read worker; do
-    scp hadoop-3.3.1.tar.gz $worker:~/
-    ssh $worker
-    tar -xzf hadoop-3.3.1.tar.gz
-    mv hadoop-3.3.1 hadoop
-    exit
-    scp ~/hadoop/etc/hadoop/* $worker:~/hadoop/etc/hadoop/;
+    if [[ $worker != "tp-hadoop-25"]]; then
+        scp hadoop-3.3.1.tar.gz $worker:~/
+        ssh $worker
+        tar -xzf hadoop-3.3.1.tar.gz
+        mv hadoop-3.3.1 hadoop
+        exit
+        scp ~/hadoop/etc/hadoop/* $worker:~/hadoop/etc/hadoop/;
+    fi
 done
 ```
 
@@ -117,3 +119,45 @@ wget -O frankenstein.txt https://www.gutenberg.org/files/84/84-0.txt
 
 hadoop fs -put alice.txt holmes.txt frankenstein.txt books
 ```
+
+## Monitoring the cluster
+In the command line: `hdfs dfsadmin -report`
+
+
+With the web interface (only these 2 urls seem to work):
+```
+http://137.194.211.146/tp-hadoop-25/9870/dfshealth.html#tab-overview
+http://137.194.211.146/tp-hadoop-25/8088/cluster/nodes
+```
+
+
+## Running an example
+
+source: [MapReduce Tutorial](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html)
+
+create the WordCount.java file from the tutorial page
+
+```bash
+# install jdk to be able to run the jar command
+sudo apt install default-jdk
+
+export JAVA_HOME=/usr/lib/jvm/default-java
+export PATH=${JAVA_HOME}/bin:${PATH}
+export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
+
+bin/hadoop com.sun.tools.javac.Main WordCount.java
+jar cf wc.jar WordCount*.class
+```
+
+The sample text file `alice.txt` is located in `/user/ubuntu/books` on the cluster.
+We run the application with the following command
+
+```bash
+# run the application
+bin/hadoop jar wc.jar WordCount /user/ubuntu/books /user/ubuntu/output
+# list the output dir
+bin/hadoop fs -ls /user/ubuntu/output
+# inspect the output file
+bin/hadoop fs -head /user/ubuntu/output/part-r-00000
+```
+

@@ -1,8 +1,8 @@
 # Setting up a Hadoop cluster
 sources:
-- [Apache](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/ClusterSetup.html)
-- [Linode](https://www.linode.com/docs/guides/how-to-install-and-set-up-hadoop-cluster/)
-- [Medium](https://medium.com/@jootorres_11979/how-to-set-up-a-hadoop-3-2-1-multi-node-cluster-on-ubuntu-18-04-2-nodes-567ca44a3b12)
+- [Apache.org: Hadoop Cluster Setup](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/ClusterSetup.html)
+- [Linode: how to install and set up hadoop cluster](https://www.linode.com/docs/guides/how-to-install-and-set-up-hadoop-cluster/)
+- [Medium: how to set up hadoop multi node cluster on ubuntu 18.04](https://medium.com/@jootorres_11979/how-to-set-up-a-hadoop-3-2-1-multi-node-cluster-on-ubuntu-18-04-2-nodes-567ca44a3b12)
 
 
 "For a small cluster (on the order of 10 nodes), it is usually acceptable to run the namenode and the resource manager (yarn) on a single master machine" *source: Hadoop The Definitive Guide (T. White 2015)*
