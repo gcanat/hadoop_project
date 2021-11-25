@@ -1,4 +1,32 @@
-# Setting up a Hadoop cluster
+---
+geometry:
+- top=30mm
+- left=20mm
+- right=20mm
+colorlinks: true
+links-as-notes: true
+---
+
+# INF729 Project: Setting up a Hadoop cluster
+Sarah Boutigny, Guillaume Canat, Quang-Vinh Julien Ta - MS BGD 2021-2022
+
+## Summary
+
+We did not encounter too many difficulties setting up the Hadoop cluster on 4
+machines, after reading the documentation and a few tutorials (references below).
+However, during the configuration of Hbase and Hive we had an issue because of
+different versions of java on 2 machines (java 11). After setting all machines
+to java 8, we did not have any problems. Other small errors encountered are
+documented below.
+
+Once our clustering was up and running, we ran some small MapReduce examples provided on
+the Apache Hadoop site, namely WordCount.jar. Later, with Spark, we ran a
+similar example using a python script to count words in a Sherlock Holmes book.
+
+We also tried to run a more ambitious example using the fr-wiki database, but
+could not succeed in copying this 38Gb database on our cluster.
+
+## Configuring Hadoop
 sources:
 - [Apache](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 - [Linode](https://www.linode.com/docs/guides/how-to-install-and-set-up-hadoop-cluster/)
@@ -12,11 +40,13 @@ Need to decide which machine will be master (namenode and resource manager) and 
 We decide `tp-hadoop-25` will be master.
 
 
-## Install java, shh, pdsh, net-tools
-`sudo apt-get install default-jre ssh pdsh `
+#### Install java, shh, pdsh, net-tools
+```bash
+sudo apt-get install default-jre ssh pdsh
+```
 
 
-## download hadoop, extract and rename the directory
+#### Download hadoop, extract and rename the directory
 
 ```bash
 wget https://dlcdn.apache.org/hadoop/common/stable/hadoop-3.3.1.tar.gz
@@ -24,7 +54,7 @@ tar zxf hadoop-3.3.1.tar.gz
 mv hadoop-3.3.1 hadoop
 ```
 
-## Distribute authentication key-pairs
+#### Distribute authentication key-pairs
 generate ssh key on master node (without passphrase):
 
 ```bash
@@ -34,13 +64,13 @@ ssh-keygen -t rsa
 copy content of `.ssh/id_rsa.pub` and paste it in `.ssh/authorized_keys` on each non-master node
 
 
-## Configure master node
+#### Configure master node
 Edit `~/hadoop/etc/hadoop/hadoop-env.sh`
 ```bash
 export JAVA_HOME=/usr/lib/jvm/default-java
 ```
 
-### set namenode location
+* set namenode location
 File: `~/hadoop/etc/hadoop/core-site.xml`
 ```xml
 <configuration>
@@ -51,7 +81,7 @@ File: `~/hadoop/etc/hadoop/core-site.xml`
     </configuration>
 ```
 
-### Set path for HDFS
+* Set path for HDFS
 File: `~/hadoop/etc/hadoop/hdfs-site.xml`
 ```xml
 <configuration>
@@ -72,7 +102,7 @@ File: `~/hadoop/etc/hadoop/hdfs-site.xml`
 </configuration>
 ```
 
-### Configure workers
+* Configure workers
 File: `~/hadoop/etc/hadoop/workers`
 ```bash
 tp-hadoop-25
@@ -81,7 +111,7 @@ tp-hadoop-35
 tp-hadoop-36
 ```
 
-## Duplicate config on each node
+#### Duplicate config on each node
 ```bash
 cd ~/
 
@@ -95,18 +125,18 @@ cat ~/hadoop/etc/hadoop/workers | while read worker; do
 done
 ```
 
-## Format HDFS
+#### Format HDFS
 on node master:
 ```bash
 hdfs namenode -format
 ```
 
-## Start HDFS
+#### Start HDFS
 ```bash
 start-all.sh
 ```
 
-## Put some data to HDFS
+#### Put some data to HDFS
 ```bash
 hadoop fs -mkdir -p /user/ubuntu
 hadoop fs -mkdir books
@@ -118,20 +148,20 @@ wget -O frankenstein.txt https://www.gutenberg.org/files/84/84-0.txt
 hadoop fs -put alice.txt holmes.txt frankenstein.txt books
 ```
 
-## Monitoring the cluster
+#### Monitoring the cluster
 In the command line:
 ```bash
 hdfs dfsadmin -report
 ```
 
 With the web interface (only these 2 urls seem to work):
-```
+```bash
 http://137.194.211.146/tp-hadoop-25/9870/dfshealth.html#tab-overview
 http://137.194.211.146/tp-hadoop-25/8088/cluster/nodes
 ```
 
 
-## Running an example
+#### Running an example
 
 source: [MapReduce Tutorial](https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html)
 
@@ -158,12 +188,11 @@ bin/hadoop jar wc.jar WordCount /user/ubuntu/books /user/ubuntu/output
 # inspect the output
 bin/hadoop fs -head /user/ubuntu/output/part-r-00000
 ```
------
-## Zookeeper
------
 
-### Zookeeper configuration and startup
-[TUTO](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-an-apache-zookeeper-cluster-on-ubuntu-18-04)
+## Zookeeper
+
+#### Zookeeper configuration and startup
+[Zookeeper tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-an-apache-zookeeper-cluster-on-ubuntu-18-04)
 
 ```bash
 wget https://downloads.apache.org/zookeeper/stable/apache-zookeeper-3.6.3-bin.tar.gz
@@ -188,9 +217,9 @@ Edit `~/apache-zookeeper-3.6.3/data/myid` and set the server number (for example
 Start zookeeper: `zkServer.sh start`
 
 
-### Running simple examples
+#### Running simple examples
 
-[Example](https://zookeeper.apache.org/doc/r3.4.13/zookeeperTutorial.html)
+We can run some examples based on the Apache Zookeeper documentation: [Zookeeper examples](https://zookeeper.apache.org/doc/r3.4.13/zookeeperTutorial.html)
 
 ## HBase
 File : conf/hbase-env.sh
@@ -227,7 +256,9 @@ Start HBase : `bin/start-hbase.sh`
 
 
 Download Hive
-`wget https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz`
+```bash
+wget https://dlcdn.apache.org/hive/hive-3.1.2/apache-hive-3.1.2-bin.tar.gz
+```
 
 Extract the archive
 
@@ -323,10 +354,14 @@ cd spark-3.2.0-bin
 We can test our cluster setup with a simple wordcount on the holmes.txt that we
 uploaded earlier on the HDFS
 ```bash
-./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn --deploy-mode cluster --supervise --executor-memory 5G --total-executor-cores 100 /home/ubuntu/spark-3.2.0-bin-hadoop3.2/spark_wordcount.py /ubuntu/holmes.txt
+./bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn
+--deploy-mode cluster --supervise --executor-memory 5G --total-executor-cores 100
+/home/ubuntu/spark-3.2.0-bin-hadoop3.2/spark_wordcount.py /ubuntu/holmes.txt
 ```
+
 For the above command to work we need to export HADOOP_CONF_DIR, to do that we
 add the following line in `.bashrc`:
+
 ```bash
 export HADOOP_CONF_DIR=/home/ubuntu/hadoop-3.3.1/etc/hadoop/
 ```
@@ -363,11 +398,12 @@ to `yarn-site.xml`
 ```
 Now we can run the following command to display logs of our application
 ```bash
-bin/hdfs dfs -cat /tmp/logs/ubuntu/bucket-logs-tfile/0001/application_1634911618427_0001/tp-hadoop-36_41289
+bin/hdfs dfs -cat
+/tmp/logs/ubuntu/bucket-logs-tfile/0001/application_1634911618427_0001/tp-hadoop-36_41289
 ```
 
 ## Project
-we download the french wikimedia data to the hadoop bridge `tp-bridge-2`:
+We download the french wikimedia data to the hadoop bridge `tp-bridge-2`:
 ```bash
 wget https://dumps.wikimedia.org/frwiki/20211101/frwiki-20211101-pages-meta-current.xml.bz2
 bzip2 -d frwiki-20211101-pages-meta-current.xml.bz2
@@ -376,9 +412,16 @@ Then we can send it to our hdfs cluster with this command:
 ```bash
 bin/hdfs dfs -fs tp-hadoop-25:9000 -put ../frwiki-20211101-pages-meta-current.xml /user/ubuntu/
 ```
-
-
-
-
-
-
+We get the following error, even after several attemps where we reduce the
+replication factor to 2, and we manually remove all data in data/namenode,
+data/datanode on all machines and reformat HDFS.
+```bash
+2021-11-09 11:56:40,998 WARN hdfs.DataStreamer: DataStreamer Exception
+org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.hdfs.server.namenode.SafeModeException):
+Cannot add block to /user/ubuntu/frwiki-20211101-pages-meta-current.xml._COPYING_.
+Name node is in safe mode.
+Resources are low on NN. Please add or free up more resourcesthen turn off safe mode manually.
+NOTE:  If you turn off safe mode before adding resources, the NN will immediately return to
+safe mode. Use "hdfs dfsadmin -safemode leave" to turn safe mode off.
+NamenodeHostName:tp-hadoop-25
+```
