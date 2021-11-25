@@ -1,3 +1,12 @@
+---
+geometry:
+- top=30mm
+- left=20mm
+- right=20mm
+colorlinks: true
+links-as-notes: true
+---
+
 # INF729 Project: Setting up a Hadoop cluster
 Sarah Boutigny, Guillaume Canat, Quang-Vinh Julien Ta - MS BGD 2021-2022
 
